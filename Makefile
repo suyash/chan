@@ -3,6 +3,9 @@
 # Points to the root of Google Test
 GTEST_DIR = vendor/googletest
 
+# Pointers to the root directories of examples
+EXAMPLES_DIR = examples
+
 # Flags passed to the preprocessor.
 CPPFLAGS += -isystem $(GTEST_DIR)/include -std=c++11
 
@@ -11,6 +14,12 @@ CXXFLAGS += -g -Wall -Wextra -pthread -std=c++11
 
 # All tests produced by this Makefile.
 TESTS = circular_queue_test chan_test
+
+# All examples produced by this Makefile
+EXAMPLES_SRC = $(wildcard $(EXAMPLES_DIR)/**/*.cc)
+EXAMPLES_OBJECTS = $(EXAMPLES_SRC:.cc=.o)
+EXAMPLES_EXECS = $(EXAMPLES_SRC:.cc=.out)
+EXAMPLES = $(EXAMPLES_SRC:.cc=)
 
 # All Google Test headers.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
@@ -21,12 +30,14 @@ GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
 
 # General Tasks
 
-all : test
+all : test examples
 
 clean :
 	rm -f $(TESTS).out $(BENCHS).out $(EXAMPLES_OBJECTS) $(EXAMPLES_EXECS) gtest.a gtest_main.a *.o *.out
 
 test: $(TESTS)
+
+examples: $(EXAMPLES)
 
 # Tasks for gtest
 
@@ -63,3 +74,27 @@ chan_test.out : gtest_main.a chan_test.o
 
 chan_test : chan_test.out
 	./$<
+
+# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/unbuffered
+
+$(EXAMPLES_DIR)/tylertreat_chan/unbuffered : $(EXAMPLES_DIR)/tylertreat_chan/unbuffered.out
+	./$<
+
+$(EXAMPLES_DIR)/tylertreat_chan/unbuffered.out : $(EXAMPLES_DIR)/tylertreat_chan/unbuffered.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/buffered
+
+$(EXAMPLES_DIR)/tylertreat_chan/buffered : $(EXAMPLES_DIR)/tylertreat_chan/buffered.out
+	./$<
+
+$(EXAMPLES_DIR)/tylertreat_chan/buffered.out : $(EXAMPLES_DIR)/tylertreat_chan/buffered.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/close
+
+$(EXAMPLES_DIR)/tylertreat_chan/close : $(EXAMPLES_DIR)/tylertreat_chan/close.out
+	./$<
+
+$(EXAMPLES_DIR)/tylertreat_chan/close.out : $(EXAMPLES_DIR)/tylertreat_chan/close.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
