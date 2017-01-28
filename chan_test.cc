@@ -21,6 +21,7 @@ TEST(unbuffered_chan, integers) {
 	});
 
 	c << 1 << 2 << 3;
+
 	t.join();
 }
 
@@ -31,7 +32,7 @@ TEST(unbuffered_chan, strings) {
 		std::string x;
 
 		c >> x;
-		ASSERT_STREQ("buffered", x.c_str());
+		ASSERT_STREQ("unbuffered", x.c_str());
 
 		c >> x;
 		ASSERT_STREQ("chan", x.c_str());
@@ -40,7 +41,8 @@ TEST(unbuffered_chan, strings) {
 		ASSERT_STREQ("test", x.c_str());
 	});
 
-	c << "buffered" << "chan" << "test";
+	c << "unbuffered" << "chan" << "test";
+
 	t.join();
 }
 
@@ -60,7 +62,9 @@ TEST(buffered_chan, integers) {
 		ASSERT_EQ(3, x);
 	});
 
-	c << 1 << 2 << 3;
+	int x = 1, y = 2, z = 3;
+	c << x << y << z;
+
 	t.join();
 }
 
@@ -80,7 +84,9 @@ TEST(buffered_chan, strings) {
 		ASSERT_STREQ("test", x.c_str());
 	});
 
-	c << "buffered" << "chan" << "test";
+	std::string s1 = "buffered", s2 = "chan", s3 = "test";
+	c << s1 << s2 << s3;
+
 	t.join();
 }
 
@@ -108,16 +114,17 @@ TEST(unbuffered_chan, communication_test) {
 TEST(buffered_chan, communication_test) {
 	std::string a = "not hello, world";
 	chan::buffered_chan<int> c(10);
+	int _ = 0;
 
 	auto f = [&]() {
 		a = "hello, world";
 
-		c << 0;
+		c << _;
 	};
 
 	std::thread t(f);
 
-	int _ = 0;
+	// this will block until the thread sends something across c
 	c >> _;
 
 	ASSERT_STREQ("hello, world", a.c_str());
