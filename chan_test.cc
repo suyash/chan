@@ -131,3 +131,60 @@ TEST(buffered_chan, communication_test) {
 
 	t.join();
 }
+
+// https://github.com/tylertreat/chan/blob/master/src/chan_test.c#L399
+TEST(buffered_chan, multi) {
+	chan::buffered_chan<int> c(5);
+
+	std::thread pool[100];
+
+	int data = 1;
+	auto sender = [&data](chan::write_chan<int>& c){
+		c << data;
+	};
+
+	for (int i = 0 ; i < 50 ; i++) {
+		pool[i] = std::thread(sender, std::ref(c));
+	}
+
+	auto receiver = [](chan::read_chan<int>& c){
+		int _ = 0;
+		c >> _;
+	};
+
+	for (int i = 50 ; i < 100 ; i++) {
+		pool[i] = std::thread(receiver, std::ref(c));
+	}
+
+	for (int i = 0 ; i < 100 ; i++) {
+		pool[i].join();
+	}
+}
+
+// https://github.com/tylertreat/chan/blob/master/src/chan_test.c#L399
+TEST(unbuffered_chan, multi) {
+	chan::unbuffered_chan<int> c;
+
+	std::thread pool[100];
+
+	auto sender = [](chan::write_chan<int>& c){
+		c << 1;
+	};
+
+	for (int i = 0 ; i < 50 ; i++) {
+		pool[i] = std::thread(sender, std::ref(c));
+	}
+
+	auto receiver = [](chan::read_chan<int>& c){
+		int _ = 0;
+		c >> _;
+	};
+
+	for (int i = 50 ; i < 100 ; i++) {
+		pool[i] = std::thread(receiver, std::ref(c));
+	}
+
+	for (int i = 0 ; i < 100 ; i++) {
+		pool[i].join();
+	}
+}
