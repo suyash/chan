@@ -1,11 +1,18 @@
 #pragma once
 
 #include <condition_variable>
+#include <exception>
 #include <mutex>
 
 #include "circular_queue.hh"
 
 namespace chan {
+
+struct buffered_chan_rvalue_exception: public std::exception {
+	virtual const char* what() const throw() {
+		return "cannot add rvalues to buffered channels for now";
+	}
+} _buffered_chan_rvalue_exception;
 
 template <typename T>
 class chan;
@@ -74,6 +81,7 @@ public:
 	virtual bool isClosed() const = 0;
 	virtual bool write(const T&) = 0;
 	virtual chan<T>& operator<<(const T&) = 0;
+	virtual chan<T>& operator<<(T&& val) = 0;
 };
 
 /**
@@ -134,10 +142,24 @@ public:
 	}
 
 	/**
-	 * operator<< overloads the left shift operator to write to the channel,
-	 * similar to std::ostream
+	 * operator<<(const T&) overloads the left shift operator to write
+	 * to the channel, similar to std::ostream
 	 * */
-	chan<T>& operator<<(const T& val) {
+	virtual chan<T>& operator<<(const T& val) {
+		this->write(val);
+		return *this;
+	}
+
+	/**
+	 * operator<<(T&&) implements writing rvalue references to a channel.
+	 *
+	 * unbuffered channels block the current thread after write until the
+	 * data has been read by another thread. Hence, calling `write` directly
+	 * with an rvalue is safe for them.
+	 *
+	 * For buffered channels, it isn't, hence this method has been overriden.
+	 * */
+	virtual chan<T>& operator<<(T&& val) {
 		this->write(val);
 		return *this;
 	}
@@ -326,6 +348,32 @@ public:
 		// NOTE: this doesn't immediately block for read
 
 		return true;
+	}
+
+	/**
+	 * operator<<(const T& val) calls write for lvalues.
+	 *
+	 * This is here because otherwise near match will always resolve to
+	 * operator<<(T&&)
+	 * */
+	chan<T>& operator<<(const T& val) {
+	       this->write(val);
+	       return *this;
+	}
+
+	/**
+	 * operator<< implements writing rvalue references to a buffered_chan.
+	 *
+	 * buffered channels do not block the current thread after write. Hence,
+	 * the value might get destroyed before being read.
+	 *
+	 * For now, not supporting this by throwing an exception.
+	 *
+	 * TODO: figure this out.
+	 * */
+	chan<T>& operator<<(T&& val) {
+		throw _buffered_chan_rvalue_exception;
+		return *this;
 	}
 
 	/**
