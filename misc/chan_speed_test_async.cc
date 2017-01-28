@@ -11,6 +11,9 @@
 
 const int MAX_THREADS = 16;
 
+std::future<void> serverThreads[MAX_THREADS];
+std::future<void> clientThreads[MAX_THREADS];
+
 int _ = 0;
 
 std::chrono::time_point<std::chrono::system_clock> startTimes[MAX_THREADS];
@@ -32,9 +35,6 @@ void client(chan::chan<int>& c, int id) {
 
 void measure(int numThreads) {
 	chan::unbuffered_chan<int> c;
-
-	std::future<void> serverThreads[numThreads];
-	std::future<void> clientThreads[numThreads];
 
 	for (int i = 0; i < numThreads; i++) {
 		serverThreads[i] = std::async(std::launch::async, server, std::ref(c), i);
