@@ -32,8 +32,14 @@ GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
 
 all : test examples
 
-clean :
-	rm -f $(TESTS).out $(BENCHS).out $(EXAMPLES_OBJECTS) $(EXAMPLES_EXECS) gtest.a gtest_main.a *.o *.out
+clean_test :
+	rm -f *_test.o *_test.out
+
+clean_examples :
+	rm -f $(EXAMPLES_OBJECTS) $(EXAMPLES_EXECS)
+
+clean : clean_test clean_examples
+	rm -f gtest.a gtest_main.a gtest-all.o gtest_main.o
 
 test: $(TESTS)
 
