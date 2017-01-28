@@ -371,7 +371,7 @@ public:
 	 *
 	 * TODO: figure this out.
 	 * */
-	chan<T>& operator<<(T&& val) {
+	chan<T>& operator<<(T&&) {
 		throw _buffered_chan_rvalue_exception;
 		return *this;
 	}
