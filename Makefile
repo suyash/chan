@@ -16,7 +16,7 @@ CXXFLAGS += -g -Wall -Wextra -pthread -std=c++11
 TESTS = circular_queue_test chan_test
 
 # All examples produced by this Makefile
-EXAMPLES_SRC = $(wildcard $(EXAMPLES_DIR)/**/*.cc)
+EXAMPLES_SRC = $(wildcard $(EXAMPLES_DIR)/**/*.cc $(EXAMPLES_DIR)/*.cc)
 EXAMPLES_OBJECTS = $(EXAMPLES_SRC:.cc=.o)
 EXAMPLES_EXECS = $(EXAMPLES_SRC:.cc=.out)
 EXAMPLES = $(EXAMPLES_SRC:.cc=)
@@ -97,4 +97,20 @@ $(EXAMPLES_DIR)/tylertreat_chan/close : $(EXAMPLES_DIR)/tylertreat_chan/close.ou
 	./$<
 
 $(EXAMPLES_DIR)/tylertreat_chan/close.out : $(EXAMPLES_DIR)/tylertreat_chan/close.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# Tasks for $(EXAMPLES_DIR)/read_chan
+
+$(EXAMPLES_DIR)/read_chan : $(EXAMPLES_DIR)/read_chan.out
+	./$<
+
+$(EXAMPLES_DIR)/read_chan.out : $(EXAMPLES_DIR)/read_chan.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# Tasks for $(EXAMPLES_DIR)/write_chan
+
+$(EXAMPLES_DIR)/write_chan : $(EXAMPLES_DIR)/write_chan.out
+	./$<
+
+$(EXAMPLES_DIR)/write_chan.out : $(EXAMPLES_DIR)/write_chan.cc
 	$(CXX) $(CXXFLAGS) $< -o $@
