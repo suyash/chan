@@ -2,6 +2,8 @@
  * Port of https://github.com/tylertreat/chan/blob/master/examples/buffered.c
  * */
 
+#include <string>
+
 #include "../../chan.hh"
 
 int main() {

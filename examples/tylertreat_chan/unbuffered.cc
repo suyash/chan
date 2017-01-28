@@ -2,9 +2,10 @@
  * Port of https://github.com/tylertreat/chan/blob/master/examples/unbuffered.c
  * */
 
-#include "../../chan.hh"
-
+#include <string>
 #include <thread>
+
+#include "../../chan.hh"
 
 int main() {
 	chan::unbuffered_chan<std::string> c;
