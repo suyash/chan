@@ -336,7 +336,9 @@ private:
 public:
 	buffered_chan(int capacity)
 	    : capacity(capacity), data(circular_queue<const T*>(capacity)) {
-		throw _buffered_chan_zero_size_exception;
+		if (capacity == 0) {
+			throw _buffered_chan_zero_size_exception;
+		}
 	}
 
 	buffered_chan(const buffered_chan& other) = delete;
