@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "chan.hh"
-
+#include <atomic>
 #include <thread>
+
+#include "chan.hh"
 
 TEST(unbuffered_chan, integers) {
 	chan::unbuffered_chan<int> c;
@@ -195,7 +196,8 @@ TEST(buffered_chan, multi_with_pause) {
 
 	std::thread pool[100];
 
-	int blocked_count = 0;
+	std::atomic<int> blocked_count;
+	blocked_count.store(0);
 
 	int data = 1;
 	auto sender = [&blocked_count, &data](chan::write_chan<int>& c){
@@ -209,7 +211,7 @@ TEST(buffered_chan, multi_with_pause) {
 
 	// wait for 50 threads to get blocked
 	while (true) {
-		if (blocked_count == 50) {
+		if (blocked_count.load() == 50) {
 			break;
 		}
 	}
@@ -234,7 +236,8 @@ TEST(unbuffered_chan, multi_with_pause) {
 
 	std::thread pool[100];
 
-	int blocked_count = 0;
+	std::atomic<int> blocked_count;
+	blocked_count.store(0);
 
 	auto sender = [&blocked_count](chan::write_chan<int>& c){
 		blocked_count++;
@@ -247,7 +250,7 @@ TEST(unbuffered_chan, multi_with_pause) {
 
 	// wait for 50 threads to get blocked
 	while (true) {
-		if (blocked_count == 50) {
+		if (blocked_count.load() == 50) {
 			break;
 		}
 	}
