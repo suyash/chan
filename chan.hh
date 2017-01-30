@@ -8,6 +8,12 @@
 
 namespace chan {
 
+struct channel_closed_exception: public std::exception {
+	virtual const char* what() const throw() {
+		return "cannot close an already closed channel";
+	}
+} _channel_closed_exception;
+
 struct closed_channel_write_exception: public std::exception {
 	virtual const char* what() const throw() {
 		return "cannot write values to a closed channel";
@@ -132,7 +138,7 @@ public:
 		std::unique_lock<std::mutex> data_lock(data_mutex);
 
 		if (is_closed) {
-			return false;
+			throw _channel_closed_exception;
 		}
 
 		is_closed = true;
