@@ -307,7 +307,7 @@ public:
 
 		if (this->is_closed) {
 			// TODO: figure out error here
-			valref = T(0);
+			valref = T();
 			return false;
 		}
 
@@ -424,7 +424,7 @@ public:
 		while (data.empty()) {
 			if (this->is_closed) {
 				// TODO: figure out error handling here
-				valref = T(0);
+				valref = T();
 				return false;
 			}
 
