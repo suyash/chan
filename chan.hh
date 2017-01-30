@@ -53,6 +53,7 @@ public:
 	virtual bool close() = 0;
 	virtual bool isClosed() const = 0;
 	virtual bool read(T&) = 0;
+	virtual bool recv(T&) = 0;
 	virtual chan<T>& operator>>(T&) = 0;
 };
 
@@ -85,7 +86,8 @@ class write_chan {
 public:
 	virtual bool close() = 0;
 	virtual bool isClosed() const = 0;
-	virtual bool write(const T&) = 0;
+	virtual void write(const T&) = 0;
+	virtual void send(const T&) = 0;
 	virtual chan<T>& operator<<(const T&) = 0;
 	virtual chan<T>& operator<<(T&& val) = 0;
 };
@@ -148,6 +150,13 @@ public:
 	}
 
 	/**
+	 * send is an alias for write.
+	 * */
+	inline void send(const T& val) {
+		this->write(val);
+	}
+
+	/**
 	 * operator<<(const T&) overloads the left shift operator to write
 	 * to the channel, similar to std::ostream
 	 * */
@@ -168,6 +177,13 @@ public:
 	virtual chan<T>& operator<<(T&& val) {
 		this->write(val);
 		return *this;
+	}
+
+	/**
+	 * recv is an alias for read.
+	 * */
+	inline bool recv(T& val) {
+		return this->read(val);
 	}
 
 	/**
@@ -230,7 +246,7 @@ public:
 	 *
 	 * @return  bool       true if the mission was a success
 	 * */
-	bool write(const T& val) {
+	void write(const T& val) {
 		std::unique_lock<std::mutex> write_lock(write_mutex);
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
 
@@ -249,8 +265,6 @@ public:
 		while (!this->is_closed && data != nullptr) {
 			this->write_available.wait(data_lock);
 		}
-
-		return true;
 	}
 
 	/**
@@ -329,7 +343,7 @@ public:
 	 *
 	 * @return  bool       true if the mission was a success
 	 * */
-	bool write(const T& val) {
+	void write(const T& val) {
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
 
 		while (!this->is_closed && data.size() == capacity) {
@@ -350,8 +364,6 @@ public:
 		}
 
 		// NOTE: this doesn't immediately block for read
-
-		return true;
 	}
 
 	/**
