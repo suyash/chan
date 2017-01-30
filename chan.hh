@@ -8,6 +8,12 @@
 
 namespace chan {
 
+struct closed_channel_write_exception: public std::exception {
+	virtual const char* what() const throw() {
+		return "cannot write values to a closed channel";
+	}
+} _closed_channel_write_exception;
+
 struct buffered_chan_rvalue_exception: public std::exception {
 	virtual const char* what() const throw() {
 		return "cannot add rvalues to buffered channels for now";
@@ -229,8 +235,7 @@ public:
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
 
 		if (this->is_closed) {
-			// TODO: figure out error here
-			return false;
+			throw _closed_channel_write_exception;
 		}
 
 		data = &val;
@@ -334,8 +339,7 @@ public:
 		}
 
 		if (this->is_closed) {
-			// TODO: handle error here
-			return false;
+			throw _closed_channel_write_exception;
 		}
 
 		data.push(&val);
