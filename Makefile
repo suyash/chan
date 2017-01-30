@@ -81,42 +81,8 @@ chan_test.out : gtest_main.a chan_test.o
 chan_test : chan_test.out
 	./$<
 
-# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/unbuffered
+# Utilize the default task for running examples
 
-$(EXAMPLES_DIR)/tylertreat_chan/unbuffered : $(EXAMPLES_DIR)/tylertreat_chan/unbuffered.out
-	./$<
-
-$(EXAMPLES_DIR)/tylertreat_chan/unbuffered.out : $(EXAMPLES_DIR)/tylertreat_chan/unbuffered.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/buffered
-
-$(EXAMPLES_DIR)/tylertreat_chan/buffered : $(EXAMPLES_DIR)/tylertreat_chan/buffered.out
-	./$<
-
-$(EXAMPLES_DIR)/tylertreat_chan/buffered.out : $(EXAMPLES_DIR)/tylertreat_chan/buffered.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-# Tasks for $(EXAMPLES_DIR)/tylertreat_chan/close
-
-$(EXAMPLES_DIR)/tylertreat_chan/close : $(EXAMPLES_DIR)/tylertreat_chan/close.out
-	./$<
-
-$(EXAMPLES_DIR)/tylertreat_chan/close.out : $(EXAMPLES_DIR)/tylertreat_chan/close.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-# Tasks for $(EXAMPLES_DIR)/read_chan
-
-$(EXAMPLES_DIR)/read_chan : $(EXAMPLES_DIR)/read_chan.out
-	./$<
-
-$(EXAMPLES_DIR)/read_chan.out : $(EXAMPLES_DIR)/read_chan.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-# Tasks for $(EXAMPLES_DIR)/write_chan
-
-$(EXAMPLES_DIR)/write_chan : $(EXAMPLES_DIR)/write_chan.out
-	./$<
-
-$(EXAMPLES_DIR)/write_chan.out : $(EXAMPLES_DIR)/write_chan.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
+% : %.cc
+	$(CXX) $(CXXFLAGS) $< -o $@.out
+	./$@.out
