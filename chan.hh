@@ -14,6 +14,12 @@ struct closed_channel_write_exception: public std::exception {
 	}
 } _closed_channel_write_exception;
 
+struct buffered_chan_zero_size_exception: public std::exception {
+	virtual const char* what() const throw() {
+		return "cannot create a buffered channel of size 0, use an unbuffered channel instead";
+	}
+} _buffered_chan_zero_size_exception;
+
 struct buffered_chan_rvalue_exception: public std::exception {
 	virtual const char* what() const throw() {
 		return "cannot add rvalues to buffered channels for now";
@@ -324,7 +330,7 @@ private:
 public:
 	buffered_chan(int capacity)
 	    : capacity(capacity), data(circular_queue<const T*>(capacity)) {
-		// TODO: handle error when capacity is 0
+		throw _buffered_chan_zero_size_exception;
 	}
 
 	buffered_chan(const buffered_chan& other) = delete;
