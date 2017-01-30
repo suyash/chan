@@ -26,12 +26,6 @@ struct buffered_chan_zero_size_exception: public std::exception {
 	}
 } _buffered_chan_zero_size_exception;
 
-struct buffered_chan_rvalue_exception: public std::exception {
-	virtual const char* what() const throw() {
-		return "cannot add rvalues to buffered channels for now";
-	}
-} _buffered_chan_rvalue_exception;
-
 template <typename T>
 class chan;
 
@@ -101,7 +95,6 @@ public:
 	virtual void write(const T&) = 0;
 	virtual void send(const T&) = 0;
 	virtual chan<T>& operator<<(const T&) = 0;
-	virtual chan<T>& operator<<(T&& val) = 0;
 };
 
 /**
@@ -169,24 +162,10 @@ public:
 	}
 
 	/**
-	 * operator<<(const T&) overloads the left shift operator to write
+	 * operator<< overloads the left shift operator to write
 	 * to the channel, similar to std::ostream
 	 * */
 	virtual chan<T>& operator<<(const T& val) {
-		this->write(val);
-		return *this;
-	}
-
-	/**
-	 * operator<<(T&&) implements writing rvalue references to a channel.
-	 *
-	 * unbuffered channels block the current thread after write until the
-	 * data has been read by another thread. Hence, calling `write` directly
-	 * with an rvalue is safe for them.
-	 *
-	 * For buffered channels, it isn't, hence this method has been overriden.
-	 * */
-	virtual chan<T>& operator<<(T&& val) {
 		this->write(val);
 		return *this;
 	}
@@ -224,13 +203,14 @@ public:
 template <typename T>
 class unbuffered_chan : public chan<T> {
 private:
-	const T* data;
+	T data;
+	bool set;
 
 	mutable std::mutex read_mutex;
 	mutable std::mutex write_mutex;
 
 public:
-	unbuffered_chan() : data(nullptr) {}
+	unbuffered_chan() : data(T()), set(false) {}
 
 	unbuffered_chan(const unbuffered_chan& other) = delete;
 	unbuffered_chan& operator=(const unbuffered_chan& other) = delete;
@@ -266,7 +246,8 @@ public:
 			throw _closed_channel_write_exception;
 		}
 
-		data = &val;
+		data = val;
+		set = true;
 		this->write_wait_count++;
 
 		if (this->read_wait_count > 0) {
@@ -274,7 +255,7 @@ public:
 		}
 
 		// wait until data is consumed
-		while (!this->is_closed && data != nullptr) {
+		while (!this->is_closed && set) {
 			this->write_available.wait(data_lock);
 		}
 	}
@@ -311,8 +292,8 @@ public:
 			return false;
 		}
 
-		valref = *data;
-		data = nullptr;
+		valref = data;
+		set = false;
 
 		this->write_wait_count--;
 		this->write_available.notify_one();
@@ -331,11 +312,11 @@ template <typename T>
 class buffered_chan : public chan<T> {
 private:
 	int capacity;
-	circular_queue<const T*> data;
+	circular_queue<T> data;
 
 public:
 	buffered_chan(int capacity)
-	    : capacity(capacity), data(circular_queue<const T*>(capacity)) {
+	    : capacity(capacity), data(circular_queue<T>(capacity)) {
 		if (capacity == 0) {
 			throw _buffered_chan_zero_size_exception;
 		}
@@ -370,7 +351,7 @@ public:
 			throw _closed_channel_write_exception;
 		}
 
-		data.push(&val);
+		data.push(val);
 
 		// signal waiting reader
 		if (this->read_wait_count > 0) {
@@ -378,32 +359,6 @@ public:
 		}
 
 		// NOTE: this doesn't immediately block for read
-	}
-
-	/**
-	 * operator<<(const T& val) calls write for lvalues.
-	 *
-	 * This is here because otherwise near match will always resolve to
-	 * operator<<(T&&)
-	 * */
-	chan<T>& operator<<(const T& val) {
-	       this->write(val);
-	       return *this;
-	}
-
-	/**
-	 * operator<< implements writing rvalue references to a buffered_chan.
-	 *
-	 * buffered channels do not block the current thread after write. Hence,
-	 * the value might get destroyed before being read.
-	 *
-	 * For now, not supporting this by throwing an exception.
-	 *
-	 * TODO: figure this out.
-	 * */
-	chan<T>& operator<<(T&&) {
-		throw _buffered_chan_rvalue_exception;
-		return *this;
 	}
 
 	/**
@@ -433,7 +388,7 @@ public:
 			this->read_wait_count--;
 		}
 
-		valref = *(data.front());
+		valref = data.front();
 		data.pop();
 
 		if (this->write_wait_count > 0) {
