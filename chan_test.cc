@@ -63,8 +63,7 @@ TEST(buffered_chan, integers) {
 		ASSERT_EQ(3, x);
 	});
 
-	int x = 1, y = 2, z = 3;
-	c << x << y << z;
+	c << 1 << 2 << 3;
 
 	t.join();
 }
@@ -85,8 +84,7 @@ TEST(buffered_chan, strings) {
 		ASSERT_STREQ("test", x.c_str());
 	});
 
-	std::string s1 = "buffered", s2 = "chan", s3 = "test";
-	c << s1 << s2 << s3;
+	c << "buffered" << "chan" << "test";
 
 	t.join();
 }
@@ -139,9 +137,8 @@ TEST(buffered_chan, multi) {
 
 	std::thread pool[100];
 
-	int data = 1;
-	auto sender = [&data](chan::write_chan<int>& c){
-		c << data;
+	auto sender = [](chan::write_chan<int>& c){
+		c << 1;
 	};
 
 	for (int i = 0 ; i < 50 ; i++) {
@@ -199,10 +196,9 @@ TEST(buffered_chan, multi_with_pause) {
 	std::atomic<int> blocked_count;
 	blocked_count.store(0);
 
-	int data = 1;
-	auto sender = [&blocked_count, &data](chan::write_chan<int>& c){
+	auto sender = [&blocked_count](chan::write_chan<int>& c){
 		blocked_count++;
-		c << data;
+		c << 1;
 	};
 
 	for (int i = 0 ; i < 50 ; i++) {
