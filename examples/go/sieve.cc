@@ -3,23 +3,23 @@
 
 #include "../../chan.hh"
 
-void generate(std::shared_ptr<chan::unbuffered_chan<int>> ch) {
+void generate(std::weak_ptr<chan::unbuffered_chan<int>> ch) {
 	for (int i = 2 ; ; i++) {
-		ch->send(i);
+		ch.lock()->send(i);
 	}
 }
 
 void filter(
-	std::shared_ptr<chan::unbuffered_chan<int>> in,
-	std::shared_ptr<chan::unbuffered_chan<int>> out,
+	std::weak_ptr<chan::unbuffered_chan<int>> in,
+	std::weak_ptr<chan::unbuffered_chan<int>> out,
 	int prime
 ) {
 	for (int i = 0 ; ; i++) {
 		int x = 0;
-		in->recv(x);
+		in.lock()->recv(x);
 
 		if (x % prime != 0) {
-			out->send(x);
+			out.lock()->send(x);
 		}
 	}
 }
