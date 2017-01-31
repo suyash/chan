@@ -9,8 +9,7 @@
 int main() {
 	chan::buffered_chan<std::string> c(2);
 
-	std::string s1 = "buffered", s2 = "channel";
-	c << s1 << s2;
+	c << "buffered" << "channel";
 
 	std::string message;
 

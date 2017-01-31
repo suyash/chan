@@ -24,18 +24,14 @@ int main() {
 
 	// Send 3 jobs over the jobs channel then close it.
 	for (int i = 1; i <= 3; i++) {
-		// need to copy i as values are written by reference
-		// and by the time the values are read, i might be 4.
-		int j = i;
-
-		jobs << j;
+		jobs << i;
 		printf("sent job: %d\n", i);
 	}
 	jobs.close();
 
 	// Wait for all jobs to be received.
-	int x;
-	done >> x;
+	int _;
+	done >> _;
 
 	worker.join();
 }
