@@ -4,9 +4,7 @@
 #include "../../chan.hh"
 
 void term(chan::chan<double>& ch, int k) {
-	double x = 4.0 * std::pow(-1, k);
-	x /= 2 * k + 1;
-	ch << x;
+	ch << (4.0 * std::pow(-1, k)) / (2 * k + 1);
 }
 
 double pi(int n) {
