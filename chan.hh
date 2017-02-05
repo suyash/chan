@@ -121,6 +121,12 @@ protected:
 public:
 	chan() : is_closed(false), read_wait_count(0), write_wait_count(0) {}
 
+	~chan() {
+		if (!is_closed) {
+			close();
+		}
+	}
+
 	/**
 	 * close will close a channel if it wasn't already closed, otherwise it
 	 * will simply return false.
