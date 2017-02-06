@@ -10,12 +10,12 @@ void term(chan::chan<double>& ch, int k) {
 double pi(int n) {
 	chan::unbuffered_chan<double> ch;
 
-	for (int k = 0 ; k <= n ; k++) {
+	for (int k = 0; k <= n; k++) {
 		std::thread(term, std::ref(ch), k).detach();
 	}
 
 	double f = 0;
-	for (int k = 0 ; k <= n ; k++) {
+	for (int k = 0; k <= n; k++) {
 		double x = 0;
 		ch >> x;
 		f += x;
@@ -24,6 +24,10 @@ double pi(int n) {
 	return f;
 }
 
-int main () {
+int main() {
+#ifdef __APPLE__
+	printf("%lf\n", pi(1000));
+#else
 	printf("%lf\n", pi(5000));
+#endif
 }
