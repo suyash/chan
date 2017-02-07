@@ -121,7 +121,7 @@ protected:
 public:
 	chan() : is_closed(false), read_wait_count(0), write_wait_count(0) {}
 
-	~chan() {
+	virtual ~chan() {
 		if (!is_closed) {
 			close();
 		}
