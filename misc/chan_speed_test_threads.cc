@@ -10,7 +10,12 @@
 #include "../chan.hh"
 
 const int MAX_THREADS = 16;
+
+#ifdef __APPLE__
+const int RUN_SIZE = 50000;
+#else
 const int RUN_SIZE = 12500;
+#endif
 
 std::thread serverThreads[MAX_THREADS];
 std::thread clientThreads[MAX_THREADS];

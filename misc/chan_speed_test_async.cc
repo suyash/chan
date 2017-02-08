@@ -10,7 +10,12 @@
 #include "../chan.hh"
 
 const int MAX_THREADS = 16;
+
+#ifdef __APPLE__
+const int RUN_SIZE = 50000;
+#else
 const int RUN_SIZE = 12500;
+#endif
 
 std::future<void> serverThreads[MAX_THREADS];
 std::future<void> clientThreads[MAX_THREADS];
@@ -41,8 +46,6 @@ void measure(int numThreads) {
 		serverThreads[i] = std::async(std::launch::async, server, std::ref(c), i);
 		clientThreads[i] = std::async(std::launch::async, client, std::ref(c), i);
 	}
-
-	int _ = 0;
 
 	for (int i = 0; i < numThreads; i++) {
 		serverThreads[i].wait();

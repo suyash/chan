@@ -1,8 +1,16 @@
+#include <cmath>
 #include <future>
 #include <vector>
 
 const int MAX_THREADS = 16;
+
+#ifdef __APPLE__
+const int RUN_SIZE = 50000;
+#else
 const int RUN_SIZE = 12500;
+#endif
+
+std::promise<int> promises[5][MAX_THREADS][RUN_SIZE]; // log2(16) + 1 = 5
 
 std::future<void> serverThreads[MAX_THREADS];
 std::future<void> clientThreads[MAX_THREADS];
@@ -27,11 +35,10 @@ void client(std::promise<int>* c, int id) {
 }
 
 void measure(int numThreads) {
-	std::promise<int> promises[numThreads][RUN_SIZE];
-
+	int pain = static_cast<int>(std::log2(numThreads));
 	for (int i = 0; i < numThreads; i++) {
-		serverThreads[i] = std::async(std::launch::async, server, promises[i], i);
-		clientThreads[i] = std::async(std::launch::async, client, promises[i], i);
+		serverThreads[i] = std::async(std::launch::async, server, promises[pain][i], i);
+		clientThreads[i] = std::async(std::launch::async, client, promises[pain][i], i);
 	}
 
 	for (int i = 0; i < numThreads; i++) {
