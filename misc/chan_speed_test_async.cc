@@ -10,6 +10,7 @@
 #include "../chan.hh"
 
 const int MAX_THREADS = 16;
+const int RUN_SIZE = 12500;
 
 std::future<void> serverThreads[MAX_THREADS];
 std::future<void> clientThreads[MAX_THREADS];
@@ -21,14 +22,14 @@ std::chrono::time_point<std::chrono::system_clock> endTimes[MAX_THREADS];
 
 void server(chan::chan<int>& c, int id) {
 	startTimes[id] = std::chrono::system_clock::now();
-	for (int i = 0; i < 1000000; i++) {
-		c >> _;
+	for (int i = 0; i < RUN_SIZE; i++) {
+		c << i;
 	}
 }
 
 void client(chan::chan<int>& c, int id) {
-	for (int i = 0; i < 1000000; i++) {
-		c << i;
+	for (int i = 0; i < RUN_SIZE; i++) {
+		c >> _;
 	}
 	endTimes[id] = std::chrono::system_clock::now();
 }
@@ -68,12 +69,12 @@ void measure(int numThreads) {
 
 #ifdef __APPLE__
 	printf(
-	    "chan: %d*1000000 send/recv time in ms: %lld (%f nr_of_msg/msec)\n",
-	    numThreads, ms, double(numThreads * 1000000) / ms);
+	    "chan: %d*%d send/recv time in ms: %lld (%f nr_of_msg/msec)\n",
+	    numThreads, RUN_SIZE, ms, double(numThreads * RUN_SIZE) / ms);
 #else
 	printf(
-	    "chan: %d*1000000 send/recv time in ms: %ld (%f nr_of_msg/msec)\n",
-	    numThreads, ms, double(numThreads * 1000000) / ms);
+	    "chan: %d*%d send/recv time in ms: %ld (%f nr_of_msg/msec)\n",
+	    numThreads, RUN_SIZE, ms, double(numThreads * RUN_SIZE) / ms);
 #endif
 }
 
