@@ -21,6 +21,9 @@ EXAMPLES_OBJECTS = $(EXAMPLES_SRC:.cc=.o)
 EXAMPLES_EXECS = $(EXAMPLES_SRC:.cc=.out)
 EXAMPLES = $(EXAMPLES_SRC:.cc=)
 
+# Speed Tests
+SPEED_TESTS = misc/chan_speed_test_async misc/chan_speed_test_threads misc/promise_speed_test_threads
+
 # All Google Test headers.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
@@ -30,7 +33,7 @@ GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
 
 # General Tasks
 
-all : test examples
+all : test examples speed_tests
 
 clean_test :
 	rm -f *_test.o *_test.out
@@ -44,6 +47,8 @@ clean : clean_test clean_examples
 test: $(TESTS)
 
 examples: $(EXAMPLES)
+
+speed_tests: $(SPEED_TESTS)
 
 # Tasks for gtest
 
