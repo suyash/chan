@@ -107,10 +107,10 @@ public:
 	/**
 	 * push pushes a value to the front of the queue
 	 *
-	 * @param   const T&   the parameter to push in the queue
+	 * @param   val   const T&   the parameter to push in the queue
 	 *
-	 * @return  bool       true if the operation was successful, false
-	 *                     otherwise
+	 * @return        bool       true if the operation was successful, false
+	 *                           otherwise
 	 * */
 	bool push(const T& val) {
 		if (filled == capacity) {

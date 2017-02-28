@@ -364,9 +364,9 @@ public:
 	 * waiting writers.
 	 *
 	 *
-	 * @param   val   T&    the reference that is assigned the value in the front
+	 * @param   valref   T&    the reference that is assigned the value in the front
 	 *
-	 * @return        bool  the result of this mission
+	 * @return           bool  the result of this mission
 	 * */
 	bool read(T& valref) {
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
