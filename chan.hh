@@ -26,9 +26,6 @@ struct buffered_chan_zero_size_exception: public std::exception {
 	}
 } _buffered_chan_zero_size_exception;
 
-template <typename T>
-class chan;
-
 /**
  * read_chan defines an interface for a channel that only supports reads
  *
@@ -59,8 +56,22 @@ public:
 	virtual bool close() = 0;
 	virtual bool isClosed() const = 0;
 	virtual bool read(T&) = 0;
-	virtual bool recv(T&) = 0;
-	virtual chan<T>& operator>>(T&) = 0;
+
+	/**
+	 * recv is an alias for read.
+	 * */
+	inline bool recv(T& val) {
+		return this->read(val);
+	}
+
+	/**
+	 * operator>> overloads the right shift operator to read from the
+	 * channel, similar to std::istream
+	 * */
+	read_chan<T>& operator>>(T& val) {
+		this->read(val);
+		return *this;
+	}
 };
 
 /**
@@ -93,8 +104,22 @@ public:
 	virtual bool close() = 0;
 	virtual bool isClosed() const = 0;
 	virtual void write(const T&) = 0;
-	virtual void send(const T&) = 0;
-	virtual chan<T>& operator<<(const T&) = 0;
+
+	/**
+	 * send is an alias for write.
+	 * */
+	inline void send(const T& val) {
+		this->write(val);
+	}
+
+	/**
+	 * operator<< overloads the left shift operator to write
+	 * to the channel, similar to std::ostream
+	 * */
+	virtual write_chan<T>& operator<<(const T& val) {
+		this->write(val);
+		return *this;
+	}
 };
 
 /**
@@ -159,38 +184,6 @@ public:
 		std::unique_lock<std::mutex> data_lock(data_mutex);
 		return is_closed;
 	}
-
-	/**
-	 * send is an alias for write.
-	 * */
-	inline void send(const T& val) {
-		this->write(val);
-	}
-
-	/**
-	 * operator<< overloads the left shift operator to write
-	 * to the channel, similar to std::ostream
-	 * */
-	virtual chan<T>& operator<<(const T& val) {
-		this->write(val);
-		return *this;
-	}
-
-	/**
-	 * recv is an alias for read.
-	 * */
-	inline bool recv(T& val) {
-		return this->read(val);
-	}
-
-	/**
-	 * operator>> overloads the right shift operator to read from the
-	 * channel, similar to std::istream
-	 * */
-	chan<T>& operator>>(T& val) {
-		this->read(val);
-		return *this;
-	}
 };
 
 /**
@@ -240,9 +233,7 @@ public:
 	 * - https://golang.org/ref/mem#tmp_7
 	 *
 	 *
-	 * @param   const T&   the value to add
-	 *
-	 * @return  bool       true if the mission was a success
+	 * @param   val   const T&   the value to add
 	 * */
 	void write(const T& val) {
 		std::unique_lock<std::mutex> write_lock(write_mutex);
@@ -278,9 +269,9 @@ public:
 	 * - https://golang.org/ref/mem#tmp_7
 	 *
 	 *
-	 * @param   T&    the reference that is assigned the value in the front
+	 * @param   valref   T&    the reference that is assigned the value in the front
 	 *
-	 * @return  bool  the result of this mission
+	 * @return           bool  the result of this mission
 	 * */
 	bool read(T& valref) {
 		std::unique_lock<std::mutex> read_lock(read_mutex);
@@ -340,9 +331,7 @@ public:
 	 * add the value to the channel's buffer and notify any waiting readers.
 	 *
 	 *
-	 * @param   const T&   the value to add
-	 *
-	 * @return  bool       true if the mission was a success
+	 * @param   val   const T&   the value to add
 	 * */
 	void write(const T& val) {
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
@@ -375,9 +364,9 @@ public:
 	 * waiting writers.
 	 *
 	 *
-	 * @param   T&    the reference that is assigned the value in the front
+	 * @param   val   T&    the reference that is assigned the value in the front
 	 *
-	 * @return  bool  the result of this mission
+	 * @return        bool  the result of this mission
 	 * */
 	bool read(T& valref) {
 		std::unique_lock<std::mutex> data_lock(this->data_mutex);
